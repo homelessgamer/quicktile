@@ -341,6 +341,49 @@ def move_to_position(winman,       # type: WindowManager
     winman.reposition(win, result, use_rect, gravity=gravity,
             geometry_mask=gravity_mask)
 
+# pylint: disable=no-member
+SMARTTILE_COMMANDS = {
+    'smarttile-top': [0, -1],
+    'smarttile-bottom': [0, 1],
+    'smarttile-left': [-1, 0],
+    'smarttile-right': [1, 0]
+}
+@commands.add_many(SMARTTILE_COMMANDS)
+def smart_tile(winman, win, state, delta_x, delta_y): # pylint: disable=unused-argument
+    # type: (WindowManager, wnck.Window, Any, int,int) -> None
+    """Smart window moving with only arrow keys. (Useful for laptops without keypad)
+    Move window on SmartTiles by delta x and y:
+    bounds: columns x 3
+    1 2 3
+    4 5 6
+    7 8 9
+    5: state as it was before quicktile touched it
+    4: window fills left half of screen
+    2: window fills top half of screen
+    1: window fills top-left quarter of screen
+    Every time you try to move on a SmartTile out of bounds, cycle_dimensions changes
+    the width of the window.
+    """
+    smarttiles = [
+        ['top-left', 'top', 'top-right'],
+        ['left', 'move-to-center', 'right'],
+        ['bottom-left', 'bottom', 'bottom-right']
+    ]
+    columns = 3  # could be even more if there were a way to put windows in specific rows
+    winpos = winman.get_property('_SMARTTILE_WIN_POS', win)
+    if not winpos:
+        winpos = [None, None, (1, 1)]  # TODO compute center
+    (x, y) = winpos[2]
+    #(x, y) = winman.get_property('_SMARTTILE_WIN_POS', win)
+    if 0 <= x + delta_x < columns and 0 <= y + delta_y < 3:  # if not over-/underflow
+        x += delta_x
+        y += delta_y
+    winman.set_property('_SMARTTILE_WIN_POS', (x, y), win)
+    commands.call(smarttiles[y][x], winman)
+
+    #TODO pass MOVE_TO_COMMANDS as argument array
+    #move_to_position(winman, win, state, MOVE_TO_COMMANDS['move-to-left'][0], MOVE_TO_COMMANDS['move-to-left'][1])
+
 @commands.add('bordered')
 def toggle_decorated(winman, win, state):  # pylint: disable=unused-argument
     # type: (WindowManager, wnck.Window, Any) -> None
