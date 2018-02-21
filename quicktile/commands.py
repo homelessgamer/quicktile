@@ -366,12 +366,13 @@ def smart_tile(winman, win, state, delta_x, delta_y): # pylint: disable=unused-a
     """
     smarttiles = [
         ['top-left', 'top', 'top-right'],
-        ['left', 'move-to-center', 'right'],
+        ['left', 'reset', 'right'],
         ['bottom-left', 'bottom', 'bottom-right']
     ]
     columns = 3  # could be even more if there were a way to put windows in specific rows
-    winpos = winman.get_property('_SMARTTILE_WIN_POS', win)
+    winpos = winman.get_property('_SMARTTILE_WIN_POS', win)  # position in SmartTile grid
     if not winpos:
+        winman.set_property('_SMARTTILE_WIN_INIT_POS', win.get_geometry(), win)  # initial pos to return to
         winpos = [None, None, (1, 1)]  # TODO compute center
     (x, y) = winpos[2]
     #(x, y) = winman.get_property('_SMARTTILE_WIN_POS', win)
@@ -379,7 +380,10 @@ def smart_tile(winman, win, state, delta_x, delta_y): # pylint: disable=unused-a
         x += delta_x
         y += delta_y
     winman.set_property('_SMARTTILE_WIN_POS', (x, y), win)
-    commands.call(smarttiles[y][x], winman)
+    if smarttiles[y][x] == 'reset':
+        winman.reposition(win, gtk.gdk.Rectangle(*winman.get_property('_SMARTTILE_WIN_INIT_POS', win)[2]))
+    else:
+        commands.call(smarttiles[y][x], winman)
 
     #TODO pass MOVE_TO_COMMANDS as argument array
     #move_to_position(winman, win, state, MOVE_TO_COMMANDS['move-to-left'][0], MOVE_TO_COMMANDS['move-to-left'][1])
