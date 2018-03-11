@@ -351,13 +351,12 @@ SMARTTILE_COMMANDS = {
 @commands.add_many(SMARTTILE_COMMANDS)
 def smart_tile(winman, win, state, delta_x, delta_y): # pylint: disable=unused-argument
     # type: (WindowManager, wnck.Window, Any, int,int) -> None
-    """Smart window moving with only arrow keys. (Useful for laptops without keypad)
-    Move window on SmartTiles by delta x and y:
-    bounds: columns x 3
+    """Smart window moving with only arrow keys. (Useful for laptops without keypad)"""
+    """Move window on SmartTile grid by delta x and y:
     1 2 3
     4 5 6
     7 8 9
-    5: state as it was before quicktile touched it
+    5: state as it was before smart_tile started changing it
     4: window fills left half of screen
     2: window fills top half of screen
     1: window fills top-left quarter of screen
@@ -371,11 +370,10 @@ def smart_tile(winman, win, state, delta_x, delta_y): # pylint: disable=unused-a
     ]
     columns = 3  # could be even more if there were a way to put windows in specific rows
     winpos = winman.get_property('_SMARTTILE_WIN_POS', win)  # position in SmartTile grid
-    if not winpos:
-        winman.set_property('_SMARTTILE_WIN_INIT_POS', win.get_geometry(), win)  # initial pos to return to
-        winpos = [None, None, (1, 1)]  # TODO compute center
+    if not winpos:  # smarttile was never called on this window yet
+        winman.set_property('_SMARTTILE_WIN_INIT_POS', win.get_geometry(), win)  # initial pos to return to at 'reset'
+        winpos = [None, None, (1, 1)]
     (x, y) = winpos[2]
-    #(x, y) = winman.get_property('_SMARTTILE_WIN_POS', win)
     if 0 <= x + delta_x < columns and 0 <= y + delta_y < 3:  # if not over-/underflow
         x += delta_x
         y += delta_y
@@ -384,9 +382,6 @@ def smart_tile(winman, win, state, delta_x, delta_y): # pylint: disable=unused-a
         winman.reposition(win, gtk.gdk.Rectangle(*winman.get_property('_SMARTTILE_WIN_INIT_POS', win)[2]))
     else:
         commands.call(smarttiles[y][x], winman)
-
-    #TODO pass MOVE_TO_COMMANDS as argument array
-    #move_to_position(winman, win, state, MOVE_TO_COMMANDS['move-to-left'][0], MOVE_TO_COMMANDS['move-to-left'][1])
 
 @commands.add('bordered')
 def toggle_decorated(winman, win, state):  # pylint: disable=unused-argument

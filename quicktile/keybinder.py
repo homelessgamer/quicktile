@@ -90,7 +90,6 @@ class KeyBinder(object):
         keycode, modmask = self.parse_accel(accel)
         if keycode is None or modmask is None:
             return False
-
         # Ignore modifiers like Mod2 (NumLock) and Lock (CapsLock)
         self._keys[(keycode, 0)] = callback  # Null modifiers seem to be a risk
         for mmask in self._vary_modmask(modmask, self._ignored_modifiers):
