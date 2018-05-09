@@ -360,8 +360,7 @@ def smart_tile(winman, win, state, delta_x, delta_y): # pylint: disable=unused-a
     4: window fills left half of screen
     2: window fills top half of screen
     1: window fills top-left quarter of screen
-    Every time you try to move on a SmartTile out of bounds, cycle_dimensions changes
-    the width of the window.
+    Every time you try to move on a SmartTile out of the bounds of your screen, dimensions are cycled by cycle_dimensions.
     """
     smarttiles = [
         ['top-left', 'top', 'top-right'],
